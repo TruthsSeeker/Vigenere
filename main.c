@@ -32,28 +32,28 @@ int main(int argc, char *argv[])
     }
 
     char crypter(char key, char value){ //encrypts a single character using the table. Sanitize input to ensure no LF is left inside
-        if (key < o|| value < o){
+        if (key < o|| value < o){//abort if variable isn't in characters table because it's too small to be the first accepted character
             return 0;
         }
 
         unsigned int a = key - o; //remove offset to use char as index
         unsigned int b = value - o; // idem
-        char c = Table[a][b];
+        char c = Table[a][b]; // access table to determine encoded character
         return c;
 
     }
 
     char decrypter(char key, char value){
-        if (key < o|| value < o){
+        if (key < o|| value < o){//abort if variable isn't in characters table because it's too small to be the first accepted character
             return 0;
         }
         unsigned int i = 0;
         unsigned int a = key-o;
 
-        while(Table[a][i]!= value){
+        while(Table[a][i]!= value){ // Iterate over appropriate row to find the corresponding character
             i++;
         }
-        char c = i+o;
+        char c = i+o; // Column index + offset gives decoded character
         return c;
 
     }
