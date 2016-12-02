@@ -8,8 +8,13 @@
 int main(int argc, char *argv[])
 {
     int EncryptOrDecrypt; //0 for encrypt, 1 for decrypt
+    int InputOrFile; // same logic but for string input
+    int OutputOrFile; // idem for output
     const unsigned int o = ' '; //Initial offset
     char Table[95][95];
+    char key[]= "Musique";
+    char input[] = "w|US_[MbUi_kA_e_W";
+    char *keyp, *inputp; //trying stuff with pointers to get around the clusterfuck of dynamic size array creation
 
 
 
@@ -64,21 +69,54 @@ int main(int argc, char *argv[])
         unsigned int InputLength= strlen(input)-1;
         int i;
         if(EncryptOrDecrypt==0){
-            for (i=0; i<InputLength; i++){
-
+            for (i=0; i<=InputLength; i++){
                 printf("%c", crypter(key[i%KeyLength], input[i]));
-
-
             }
         }
+
         else if (EncryptOrDecrypt==1){
-            for (i=0; i<InputLength; i++){
+            for (i=0; i<=InputLength; i++){
 
                 printf("%c", decrypter(key[i%KeyLength], input[i]));
 
             }
         }
         printf("\n");
+    }
+
+    void fileVigenerisation (char key[], char input[]){
+        int i;
+        FILE *ResultFile;
+        ResultFile=fopen("result.txt", "w");
+        if (EncryptOrDecrypt==0){
+            for (i=0; i<strlen(input)-1;i++){
+                fputc(crypter(key[i%(strlen(key)-1)], input[i]), ResultFile);
+                printf("%d", i);
+            }
+            fclose(ResultFile);
+        }
+
+        else if (EncryptOrDecrypt==1){
+            for (i=0; i<strlen(input)-1;i++){
+                fputc(decrypter(key[i%(strlen(key)-1)], input[i]), ResultFile);
+            }
+            fclose(ResultFile);
+        }
+    }
+
+    char *getFileContent (const char* FileAdress){
+        FILE *fp=fopen(FileAdress, "r");
+        fseek(fp, 0, SEEK_END);
+        int FLen=ftell(fp);
+        rewind(fp);
+        char* Buffer= malloc(FLen);
+        for (int i=0; i<FLen; i++){
+            Buffer[i]=fgetc(fp);
+        }
+        fclose(fp);
+        printf("%d", strlen(Buffer));
+        return Buffer;
+
     }
 
     void interactiveMode(){
@@ -89,37 +127,60 @@ int main(int argc, char *argv[])
         printf("Display Help!");
     }
 
+
+
     void argParser(){
         if (argc<=1){
             interactiveMode();
         }
         else{
-            int ArgNumber = strlen(argv);
+
             int k;
-            for(k=1; k<ArgNumber; k++){
-                if (argv[k]== "-h"){
+            for(k=0; k<argc; k++){
+                if (strcmp(argv[k], "-h") == 0){
                     helper();
-
                 }
-                else if (argv[k]== "-e"){
+
+                else if (strcmp(argv[k], "-e") == 0){
                     EncryptOrDecrypt=0;
-
+                    keyp=argv[k+1];
+                    k++;
                 }
-                else if (argv[k]== "-d"){
+
+                else if (strcmp(argv[k], "-d") == 0){
                     EncryptOrDecrypt=1;
+                    keyp=argv[k+1];
+                    k++;
+                }
+
+                else if (strcmp(argv[k], "-fi") == 0){
+                    InputOrFile=1;
+                    inputp=argv[k+1];
+                    k++;
+                }
+
+                else if (strcmp(argv[k], "-ki") == 0){
+                    InputOrFile=0;
+                    inputp=argv[k+1];
+                    k++;
+                }
+                else if (strcmp(argv[k], "-fo") == 0){
+                    OutputOrFile=1;
+                }
+                else if(strcmp(argv[k], "-so") == 0){
+                    OutputOrFile=0;
                 }
             }
         }
-
     }
 
 
 
     initTable();
-    char key[]= "Musique";
-    char input[] = "J'aime la musique";
-    vigenerisation(key,input);
-    argParser();
+    EncryptOrDecrypt=0;
+    fileVigenerisation(key, getFileContent("test.txt"));
+//    argParser();
+//    printf("%s", inputp);
 
     return 0;
 }

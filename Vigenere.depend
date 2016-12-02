@@ -1,5 +1,6 @@
 # depslib dependency file v1.0
-1480182185 source:d:\code\c\vigenere\main.c
+1480713929 source:d:\code\c\vigenere\main.c
 	<stdio.h>
 	<stdlib.h>
+	<string.h>
 
