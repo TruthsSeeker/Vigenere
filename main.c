@@ -109,25 +109,108 @@ int main(int argc, char *argv[])
         fseek(fp, 0, SEEK_END);
         int FLen=ftell(fp);
         rewind(fp);
-        char* Buffer= malloc(FLen);
-        for (int i=0; i<FLen; i++){
+        char* Buffer= malloc(FLen+1);
+        for (int i=0; i<FLen; i++){// Replace with fread once understood
             Buffer[i]=fgetc(fp);
         }
+        Buffer[FLen+1]='\0';
         fclose(fp);
-        printf("%d", strlen(Buffer));
         return Buffer;
 
     }
 
     void interactiveMode(){
-        printf("Interactive mode!");
+        char c;
+        char InteractiveKey[100];
+        char InteractiveInput[255];
+
+        void setEncryptOrDecrypt(){
+            printf("Do you wish to encrypt or decrypt something? e/d\n");
+            c= getchar();
+            fflush(stdin);
+            if (c=='e'){
+                c=0;
+                EncryptOrDecrypt=0;
+                printf("Please enter the key you wish to use (max 100 characters):\n ");
+                keyp=gets(InteractiveKey);
+                fflush(stdin);
+            }
+            else if (c=='d') {
+                c=0;
+                EncryptOrDecrypt=1;
+                printf("Please enter the key you wish to use (max 100 characters):\n ");
+                keyp=gets(InteractiveKey);
+                fflush(stdin);
+            }
+            else {
+                printf("I didn't get that\n\n");
+                setEncryptOrDecrypt();
+            }
+        }
+
+        void setInputOrFile(){
+            printf("Do you wish to encode an input or a file? i/f\n");
+            c= getchar();
+            fflush(stdin);
+            if (c=='i'){
+                c=0;
+                InputOrFile==0;
+                printf("Please input the text you wish to use (Max 255 characters) :\n");
+                inputp=gets(InteractiveInput);
+                fflush(stdin);
+            }
+            else if (c=='f'){
+                c=0;
+                InputOrFile==1;
+                printf("Please input the adress of the file you wish to use (Max 255 characters) :\n");
+                inputp=gets(InteractiveInput);
+                fflush(stdin);
+            }
+            else {
+                printf("I didn't get that\n\n");
+                setInputOrFile();
+            }
+
+        }
+
+        void setOutputOrFile(){
+            printf("Do you wish to get the result in the console or in a file? c/f\n");
+            c= getchar();
+            fflush(stdin);
+            if (c=='c'){
+                c=0;
+                OutputOrFile=0;
+            }
+            else if (c=='f'){
+                c=0;
+                OutputOrFile=1;
+            }
+            else {
+                printf("I didn't get that\n\n");
+                setOutputOrFile();
+            }
+        }
+
+        printf("Welcome to the simple vigenere cypher interactive mode!\n");
+        setEncryptOrDecrypt();
+        setInputOrFile();
+        setOutputOrFile();
     }
 
     void helper(){
-        printf("Display Help!");
+        printf("Simple Vigenere key based encrypter and decrypter\n\n"
+        "    May be used interactively or via command line arguments\n"
+        "    If no arguments are provided, program will start in interactive mode\n\n"
+        "Argument list:\n"
+        "   -h : displays helper\n"
+        "   -e \"KEY\": sets program to encrypt a string with KEY. KEY must be provided directly after this argument and must be a string\n"
+        "   -d \"KEY\": sets program to decrypt a string with KEY. KEY must be provided directly after this argument and must be a string\n"
+        "   -fi \"FILE_ADRESS\": sets program to accept a txt file as input. FILE_ADRESSS must be provided directly after this argument\n"
+        "   -ki \"STRING\": sets program to accept a string as in input. STRING must be provided directly after this argument\n"
+        "   -so : sets program to output results to console screen. Default Setting\n"
+        "   -fo : sets program to output results to results.txt file\n");
+
     }
-
-
 
     void argParser(){
         if (argc<=1){
@@ -176,11 +259,27 @@ int main(int argc, char *argv[])
 
 
 
+
+
     initTable();
-    EncryptOrDecrypt=0;
-    fileVigenerisation(key, getFileContent("test.txt"));
-//    argParser();
-//    printf("%s", inputp);
+    argParser();
+    if (InputOrFile==0){
+        if (OutputOrFile==0){
+            vigenerisation(keyp, inputp);
+        }
+        else if (OutputOrFile==1){
+            fileVigenerisation(keyp, inputp);
+        }
+    }
+
+    else if (InputOrFile==1){
+        if (OutputOrFile==0){
+            vigenerisation(keyp, getFileContent(inputp));
+        }
+        else if (OutputOrFile==1){
+            fileVigenerisation(keyp, getFileContent(inputp));
+        }
+    }
 
     return 0;
 }
