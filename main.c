@@ -10,10 +10,9 @@ int main(int argc, char *argv[])
     int EncryptOrDecrypt; //0 for encrypt, 1 for decrypt
     int InputOrFile; // same logic but for string input
     int OutputOrFile; // idem for output
+    int INeedSomeBody;//1 for help
     const unsigned int o = ' '; //Initial offset
     char Table[95][95];
-    char key[]= "Musique";
-    char input[] = "w|US_[MbUi_kA_e_W";
     char *keyp, *inputp; //trying stuff with pointers to get around the clusterfuck of dynamic size array creation
 
 
@@ -36,9 +35,9 @@ int main(int argc, char *argv[])
 
     }
 
-    char crypter(char key, char value){ //encrypts a single character using the table. Sanitize input to ensure no LF is left inside
+    char crypter(char key, char value){ //encrypts a single character using the table.
         if (key < o|| value < o){//abort if variable isn't in characters table because it's too small to be the first accepted character
-            return 0;
+            return ' ';
         }
 
         unsigned int a = key - o; //remove offset to use char as index
@@ -48,9 +47,9 @@ int main(int argc, char *argv[])
 
     }
 
-    char decrypter(char key, char value){
+    char decrypter(char key, char value){//decrypts a single character using the table
         if (key < o|| value < o){//abort if variable isn't in characters table because it's too small to be the first accepted character
-            return 0;
+            return ' ';
         }
         unsigned int i = 0;
         unsigned int a = key-o;
@@ -68,16 +67,16 @@ int main(int argc, char *argv[])
         unsigned int KeyLength = strlen(key)-1;// -1 to convert length to index
         unsigned int InputLength= strlen(input)-1;
         int i;
-        if(EncryptOrDecrypt==0){
-            for (i=0; i<=InputLength; i++){
-                printf("%c", crypter(key[i%KeyLength], input[i]));
+        if(EncryptOrDecrypt==0){//if program set to encrypt
+            for (i=0; i<=InputLength; i++){//for each character in input
+                printf("%c", crypter(key[i%KeyLength], input[i]));//print encrypted character. i%KeyLength to start over once KeyLength is reached
             }
         }
 
-        else if (EncryptOrDecrypt==1){
-            for (i=0; i<=InputLength; i++){
+        else if (EncryptOrDecrypt==1){//if program set to decrypt
+            for (i=0; i<=InputLength; i++){//for each character in input
 
-                printf("%c", decrypter(key[i%KeyLength], input[i]));
+                printf("%c", decrypter(key[i%KeyLength], input[i]));//print encrypted character. i%KeyLength to start over once KeyLength is reached
 
             }
         }
@@ -87,35 +86,35 @@ int main(int argc, char *argv[])
     void fileVigenerisation (char key[], char input[]){
         int i;
         FILE *ResultFile;
-        ResultFile=fopen("result.txt", "w");
-        if (EncryptOrDecrypt==0){
-            for (i=0; i<strlen(input)-1;i++){
-                fputc(crypter(key[i%(strlen(key)-1)], input[i]), ResultFile);
-                printf("%d", i);
+        ResultFile=fopen("result.txt", "w");//opens or creates result.txt in writing mode
+        if (EncryptOrDecrypt==0){//if program set to encrypt
+            for (i=0; i<strlen(input)-1;i++){//for each character in input
+                fputc(crypter(key[i%(strlen(key)-1)], input[i]), ResultFile);//write character in opened file
+
             }
-            fclose(ResultFile);
+            fclose(ResultFile);//close file
         }
 
-        else if (EncryptOrDecrypt==1){
-            for (i=0; i<strlen(input)-1;i++){
-                fputc(decrypter(key[i%(strlen(key)-1)], input[i]), ResultFile);
+        else if (EncryptOrDecrypt==1){//if program set to decrypt
+            for (i=0; i<strlen(input)-1;i++){//for each character in input
+                fputc(decrypter(key[i%(strlen(key)-1)], input[i]), ResultFile);//write character in opened file
             }
-            fclose(ResultFile);
+            fclose(ResultFile);// close file
         }
     }
 
     char *getFileContent (const char* FileAdress){
-        FILE *fp=fopen(FileAdress, "r");
-        fseek(fp, 0, SEEK_END);
-        int FLen=ftell(fp);
-        rewind(fp);
-        char* Buffer= malloc(FLen+1);
+        FILE *fp=fopen(FileAdress, "r");//opens file from adress in reading mode
+        fseek(fp, 0, SEEK_END);//find last position of file
+        int FLen=ftell(fp);//ftell last position to determine file size
+        rewind(fp);//rewind cursor to beginning
+        char* Buffer= malloc(FLen+1);//allocate enough memory for file
         for (int i=0; i<FLen; i++){// Replace with fread once understood
             Buffer[i]=fgetc(fp);
         }
-        Buffer[FLen+1]='\0';
-        fclose(fp);
-        return Buffer;
+        Buffer[FLen+1]='\0';//add sentinel
+        fclose(fp);//close file
+        return Buffer;//return array with file contents
 
     }
 
@@ -124,80 +123,74 @@ int main(int argc, char *argv[])
         char InteractiveKey[100];
         char InteractiveInput[255];
 
-        void setEncryptOrDecrypt(){
+        void setEncryptOrDecrypt(){//Function to set program to encrypt or decrypt
             printf("Do you wish to encrypt or decrypt something? e/d\n");
-            c= getchar();
-            fflush(stdin);
-            if (c=='e'){
-                c=0;
-                EncryptOrDecrypt=0;
+            c= getchar();//get input
+            fflush(stdin);//flush buffer
+            if (c=='e'){//compare c to parameter
+                EncryptOrDecrypt=0;//flag encrypt mode
                 printf("Please enter the key you wish to use (max 100 characters):\n ");
-                keyp=gets(InteractiveKey);
-                fflush(stdin);
+                keyp=gets(InteractiveKey);//get key from input
+                fflush(stdin);//flush buffer
             }
-            else if (c=='d') {
-                c=0;
-                EncryptOrDecrypt=1;
+            else if (c=='d') {//compare c to parameter
+                EncryptOrDecrypt=1;//flag decrypt mode
                 printf("Please enter the key you wish to use (max 100 characters):\n ");
-                keyp=gets(InteractiveKey);
-                fflush(stdin);
+                keyp=gets(InteractiveKey);//get key from input
+                fflush(stdin);//flush buffer
             }
             else {
-                printf("I didn't get that\n\n");
+                printf("I didn't get that\n\n");//calls function again if parameter isn't recognized
                 setEncryptOrDecrypt();
             }
         }
 
-        void setInputOrFile(){
+        void setInputOrFile(){//function to set program to accept input from stdin or file
             printf("Do you wish to encode an input or a file? i/f\n");
-            c= getchar();
-            fflush(stdin);
-            if (c=='i'){
-                c=0;
-                InputOrFile==0;
+            c= getchar();//get input
+            fflush(stdin);//flush buffer
+            if (c=='i'){//compare c to parameter
+                InputOrFile==0;//flag stdin mode
                 printf("Please input the text you wish to use (Max 255 characters) :\n");
-                inputp=gets(InteractiveInput);
-                fflush(stdin);
+                inputp=gets(InteractiveInput);//get input
+                fflush(stdin);//flush buffer
             }
-            else if (c=='f'){
-                c=0;
-                InputOrFile==1;
+            else if (c=='f'){//compare c to parameter
+                InputOrFile==1;//flag file input mode
                 printf("Please input the adress of the file you wish to use (Max 255 characters) :\n");
-                inputp=gets(InteractiveInput);
-                fflush(stdin);
+                inputp=gets(InteractiveInput);//get adress of file
+                fflush(stdin);//flush buffer
             }
             else {
-                printf("I didn't get that\n\n");
+                printf("I didn't get that\n\n");//call function again if parameter wasn't recognized
                 setInputOrFile();
             }
 
         }
 
-        void setOutputOrFile(){
+        void setOutputOrFile(){//function to set program to output to console or to a file
             printf("Do you wish to get the result in the console or in a file? c/f\n");
-            c= getchar();
-            fflush(stdin);
-            if (c=='c'){
-                c=0;
-                OutputOrFile=0;
+            c= getchar();//get input
+            fflush(stdin);//flush buffer
+            if (c=='c'){//compare c to parameter
+                OutputOrFile=0;//flag console output mode
             }
-            else if (c=='f'){
-                c=0;
-                OutputOrFile=1;
+            else if (c=='f'){//compare c to parameter
+                OutputOrFile=1;//flag file output mode
             }
-            else {
+            else {//call function again if parameter wasn't recognized
                 printf("I didn't get that\n\n");
                 setOutputOrFile();
             }
         }
 
-        printf("Welcome to the simple vigenere cypher interactive mode!\n");
+        printf("Welcome to the simple vigenere cypher interactive mode!\n");//successive function calls to set necessary flags
         setEncryptOrDecrypt();
         setInputOrFile();
         setOutputOrFile();
     }
 
-    void helper(){
+    void helper(){//prints help
         printf("Simple Vigenere key based encrypter and decrypter\n\n"
         "    May be used interactively or via command line arguments\n"
         "    If no arguments are provided, program will start in interactive mode\n\n"
@@ -212,46 +205,46 @@ int main(int argc, char *argv[])
 
     }
 
-    void argParser(){
-        if (argc<=1){
-            interactiveMode();
+    void argParser(){// function to parse command line arguments and set appropriate flags
+        if (argc<=1){// if no argument is provided
+            interactiveMode();//start interactive mode
         }
         else{
 
             int k;
-            for(k=0; k<argc; k++){
-                if (strcmp(argv[k], "-h") == 0){
-                    helper();
+            for(k=0; k<argc; k++){// for each argument
+                if (strcmp(argv[k], "-h") == 0){//compare argument to a parameter
+                    INeedSomeBody=1;//flag for help
                 }
 
                 else if (strcmp(argv[k], "-e") == 0){
-                    EncryptOrDecrypt=0;
-                    keyp=argv[k+1];
-                    k++;
+                    EncryptOrDecrypt=0;//set program to encrypt
+                    keyp=argv[k+1];//next argument needs to be the key
+                    k++;//no need to check the next one, we've done what we need to with it already
                 }
 
                 else if (strcmp(argv[k], "-d") == 0){
-                    EncryptOrDecrypt=1;
-                    keyp=argv[k+1];
-                    k++;
+                    EncryptOrDecrypt=1;//set program to decrypt
+                    keyp=argv[k+1];//next argument needs to be the key
+                    k++;//no need to check the next one, we've done what we need to with it already
                 }
 
                 else if (strcmp(argv[k], "-fi") == 0){
-                    InputOrFile=1;
-                    inputp=argv[k+1];
-                    k++;
+                    InputOrFile=1;//set program to accept file input
+                    inputp=argv[k+1];//next argument needs to be file adress
+                    k++;//no need to check the next one, we've done what we need to with it already
                 }
 
                 else if (strcmp(argv[k], "-ki") == 0){
-                    InputOrFile=0;
-                    inputp=argv[k+1];
-                    k++;
+                    InputOrFile=0;//set program to accept stdin
+                    inputp=argv[k+1];//next argument needs to be the input
+                    k++;//no need to check the next one, we've done what we need to with it already
                 }
                 else if (strcmp(argv[k], "-fo") == 0){
-                    OutputOrFile=1;
+                    OutputOrFile=1;//set program to output a file
                 }
                 else if(strcmp(argv[k], "-so") == 0){
-                    OutputOrFile=0;
+                    OutputOrFile=0;//set program to output to screen
                 }
             }
         }
@@ -261,23 +254,28 @@ int main(int argc, char *argv[])
 
 
 
-    initTable();
-    argParser();
-    if (InputOrFile==0){
-        if (OutputOrFile==0){
-            vigenerisation(keyp, inputp);
-        }
-        else if (OutputOrFile==1){
-            fileVigenerisation(keyp, inputp);
-        }
+    initTable();//calls table initialization function
+    argParser();//parse arguments
+    if (INeedSomeBody==1){//if help is required
+        helper();// help is provided
     }
-
-    else if (InputOrFile==1){
-        if (OutputOrFile==0){
-            vigenerisation(keyp, getFileContent(inputp));
+    else{
+        if (InputOrFile==0){//do stuff depending on flags
+            if (OutputOrFile==0){
+                vigenerisation(keyp, inputp);//if input= stdin && output=console call vigenerisation
+            }
+            else if (OutputOrFile==1){
+                fileVigenerisation(keyp, inputp);//if input=stdin && output=file call fileVigenerisation
+            }
         }
-        else if (OutputOrFile==1){
-            fileVigenerisation(keyp, getFileContent(inputp));
+
+        else if (InputOrFile==1){
+            if (OutputOrFile==0){
+                vigenerisation(keyp, getFileContent(inputp));//if input=file && output=console call vigenerisation with getFileContent(inputp) as input
+            }
+            else if (OutputOrFile==1){
+                fileVigenerisation(keyp, getFileContent(inputp));//if input=file && output=file call fileVigenerisation with getFileContent(inputp) as input
+            }
         }
     }
 
