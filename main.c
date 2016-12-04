@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     char crypter(char key, char value){ //encrypts a single character using the table.
         if (key < o|| value < o){//abort if variable isn't in characters table because it's too small to be the first accepted character
-            return ' ';
+            return 0;
         }
 
         unsigned int a = key - o; //remove offset to use char as index
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     char decrypter(char key, char value){//decrypts a single character using the table
         if (key < o|| value < o){//abort if variable isn't in characters table because it's too small to be the first accepted character
-            return ' ';
+            return 0;
         }
         unsigned int i = 0;
         unsigned int a = key-o;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
         printf("\n");
     }
 
-    void fileVigenerisation (char key[], char input[]){
+    void fileVigenerisation (char key[], char *input){
         int i;
         FILE *ResultFile;
         ResultFile=fopen("result.txt", "w");//opens or creates result.txt in writing mode
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    char *getFileContent (const char* FileAdress){
+    char *getFileContent ( char* FileAdress){
         FILE *fp=fopen(FileAdress, "r");//opens file from adress in reading mode
         fseek(fp, 0, SEEK_END);//find last position of file
         int FLen=ftell(fp);//ftell last position to determine file size
@@ -120,8 +120,7 @@ int main(int argc, char *argv[])
 
     void interactiveMode(){
         char c;
-        char InteractiveKey[100];
-        char InteractiveInput[255];
+        char InteractiveKey[100], InteractiveInput[255];
 
         void setEncryptOrDecrypt(){//Function to set program to encrypt or decrypt
             printf("Do you wish to encrypt or decrypt something? e/d\n");
@@ -138,6 +137,7 @@ int main(int argc, char *argv[])
                 printf("Please enter the key you wish to use (max 100 characters):\n ");
                 keyp=gets(InteractiveKey);//get key from input
                 fflush(stdin);//flush buffer
+
             }
             else {
                 printf("I didn't get that\n\n");//calls function again if parameter isn't recognized
@@ -150,16 +150,17 @@ int main(int argc, char *argv[])
             c= getchar();//get input
             fflush(stdin);//flush buffer
             if (c=='i'){//compare c to parameter
-                InputOrFile==0;//flag stdin mode
+                InputOrFile=0;//flag stdin mode
                 printf("Please input the text you wish to use (Max 255 characters) :\n");
                 inputp=gets(InteractiveInput);//get input
                 fflush(stdin);//flush buffer
             }
             else if (c=='f'){//compare c to parameter
-                InputOrFile==1;//flag file input mode
+                InputOrFile=1;//flag file input mode
                 printf("Please input the adress of the file you wish to use (Max 255 characters) :\n");
                 inputp=gets(InteractiveInput);//get adress of file
                 fflush(stdin);//flush buffer
+
             }
             else {
                 printf("I didn't get that\n\n");//call function again if parameter wasn't recognized
@@ -275,6 +276,7 @@ int main(int argc, char *argv[])
             }
             else if (OutputOrFile==1){
                 fileVigenerisation(keyp, getFileContent(inputp));//if input=file && output=file call fileVigenerisation with getFileContent(inputp) as input
+
             }
         }
     }
